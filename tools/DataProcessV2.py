@@ -8,9 +8,9 @@ data_path = "../data/original/v2/"
 dataset_name_list = ["14lap", "14res", "15res", "16res"]
 dataset_type_list = ["train_triplets", "dev_triplets", "test_triplets"]
 
-triplet_pattern = re.compile(r'[(](.*?)[)]', re.S)
+triplet_pattern = re.compile(r'[(](.*?)[)]', re.S) #([16, 17], [15], 'POS')
 aspect_and_opinion_pattern = re.compile(r'[\[](.*?)[]]', re.S)
-sentiment_pattern = re.compile(r"['](.*?)[']", re.S)
+sentiment_pattern = re.compile(r"['](.*?)[']", re.S) # POS
 
 forward_aspect_query_template = ["[CLS]", "what", "aspects", "?", "[SEP]"]
 forward_opinion_query_template = ["[CLS]", "what", "opinion", "given", "the", "aspect", "?", "[SEP]"]
