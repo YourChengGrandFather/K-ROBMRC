@@ -8,7 +8,7 @@ data_path = "../data/original/v2/"
 dataset_name_list = ["14lap", "14res", "15res", "16res"]
 dataset_type_list = ["train_triplets", "dev_triplets", "test_triplets"]
 
-triplet_pattern = re.compile(r'[(](.*?)[)]', re.S) #([16, 17], [15], 'POS')
+triplet_pattern = re.compile(r'[(](.*?)[)]', re.S) # ([16, 17], [15], 'POS')
 aspect_and_opinion_pattern = re.compile(r'[\[](.*?)[]]', re.S)
 sentiment_pattern = re.compile(r"['](.*?)[']", re.S) # POS
 
@@ -312,12 +312,26 @@ def get_start_end(str_list):
 
 
 def make_QA(line, word_list, aspect_list, opinion_list, sentiment_list):
+    '''
+        forward_aspect_query_template = ["[CLS]", "what", "aspects", "?", "[SEP]"]
+        forward_opinion_query_template = ["[CLS]", "what", "opinion", "given", "the", "aspect", "?", "[SEP]"]
+        backward_opinion_query_template = ["[CLS]", "what", "opinions", "?", "[SEP]"]
+        backward_aspect_query_template = ["[CLS]", "what", "aspect", "does", "the", "opinion", "describe", "?", "[SEP]"]
+        sentiment_query_template = ["[CLS]", "what", "sentiment", "given", "the", "aspect", "and", "the", "opinion", "?",
+                                    "[SEP]"]
+    '''
     # word_list.append("[SEP]")
     forward_asp_query = forward_aspect_query_template + word_list
+    print('forward_asp_query->', forward_asp_query)
     forward_asp_query_mask = [1] * len(forward_asp_query)
+    print('forward_asp_query_mask->', forward_asp_query_mask)
     forward_asp_query_seg = [0] * len(forward_aspect_query_template) + [1] * len(word_list)
+    print('forward_asp_query_seg->', forward_asp_query_seg)
     forward_asp_answer_start = [-1] * len(forward_aspect_query_template) + [0] * len(word_list)
+    print('forward_asp_answer_start->', forward_asp_answer_start)
     forward_asp_answer_end = [-1] * len(forward_aspect_query_template) + [0] * len(word_list)
+    print('forward_asp_answer_end->', forward_asp_answer_end)
+
     forward_opi_query = []
     forward_opi_query_mask = []
     forward_opi_query_seg = []
@@ -329,6 +343,7 @@ def make_QA(line, word_list, aspect_list, opinion_list, sentiment_list):
     backward_opi_query_seg = [0] * len(backward_opinion_query_template) + [1] * len(word_list)
     backward_opi_answer_start = [-1] * len(backward_opinion_query_template) + [0] * len(word_list)
     backward_opi_answer_end = [-1] * len(backward_opinion_query_template) + [0] * len(word_list)
+
     backward_asp_query = []
     backward_asp_query_mask = []
     backward_asp_query_seg = []
@@ -348,6 +363,8 @@ def make_QA(line, word_list, aspect_list, opinion_list, sentiment_list):
         for opinion_index in range(opinion_list[i][0], opinion_list[i][1] + 1):
             sentiment_word_list[opinion_index] = "[PAD]"
             sentiment_query_mask_init[opinion_index] = 0
+    print('sentiment_word_list-->', sentiment_word_list)
+    print('sentiment_query_mask_init-->', sentiment_query_mask_init)
 
     for i in range(len(aspect_list)):
         asp = aspect_list[i]
@@ -411,6 +428,10 @@ def make_QA(line, word_list, aspect_list, opinion_list, sentiment_list):
         sentiment_query_mask.append(sentiment_query_mask_temp)
         sentiment_query_seg.append(sentiment_query_seg_temp)
 
+    print('forward_asp_answer_start2-->', forward_asp_answer_start)
+    print('forward_asp_answer_end2-->', forward_asp_answer_end)
+    print('forward_opi_query', forward_opi_query)
+    
     return Data.QueryAndAnswer(line=line,
                                forward_asp_query=forward_asp_query,
                                forward_opi_query=forward_opi_query,
@@ -439,6 +460,8 @@ def make_QA(line, word_list, aspect_list, opinion_list, sentiment_list):
 
 
 def encode_solve(word_list, aspect_list, opinion_list):
+    print('aspect_list-->', aspect_list)
+    print('word_list-->', word_list)
     end = -1
     index = []
     new_word_list = []
@@ -446,15 +469,20 @@ def encode_solve(word_list, aspect_list, opinion_list):
     new_opinion_list = []
     for word in word_list:
         encode_words = tokenizer.convert_ids_to_tokens(tokenizer.encode(word))
+        print('encode_words-->', encode_words)
         encode_words_len = len(encode_words)
         for i in range(1, encode_words_len - 1):
             new_word_list.append(encode_words[i])
+        print('new_word_list-->', new_word_list)
         start = end + 1
         end = start + encode_words_len - 3
         index.append([start, end])
+        print('index', index)
     for i in range(len(aspect_list)):
         new_aspect_list.append([index[aspect_list[i][0]][0], index[aspect_list[i][1]][1]])
         new_opinion_list.append([index[opinion_list[i][0]][0], index[opinion_list[i][1]][1]])
+    print('new_aspect_list-->', new_aspect_list)
+    print('new_opinion_list-->', new_opinion_list)
     return new_word_list, new_aspect_list, new_opinion_list
 
 
@@ -470,12 +498,17 @@ def line_data_process(line, isQA=True):
     word_list = [word.lower() for word in word_list]
     triplet_str_list = re.findall(triplet_pattern, split[1])
     aspect_list = [re.findall(aspect_and_opinion_pattern, triplet)[0] for triplet in triplet_str_list]
+    print('aspect_list-->', aspect_list)
     aspect_list = [get_start_end(aspect.split(',')) for aspect in aspect_list]
+    print('aspect_list2-->', aspect_list)
     if len(aspect_list) > max_aspect_num:
         max_aspect_num = len(aspect_list)
     opinion_list = [re.findall(aspect_and_opinion_pattern, triplet)[1] for triplet in triplet_str_list]
+    print('opinion_list-->', opinion_list)
     opinion_list = [get_start_end(opinion.split(',')) for opinion in opinion_list]
+    print('opinion_list2-->', opinion_list)
     sentiment_list = [sentiments_mapping[re.findall(sentiment_pattern, triplet)[0]] for triplet in triplet_str_list]
+    print('sentiment_list-->', sentiment_list)
     assert len(aspect_list) > 0 and len(opinion_list) > 0 and len(sentiment_list) > 0
     assert len(aspect_list) == len(opinion_list) == len(sentiment_list)
     # TODO
@@ -496,12 +529,18 @@ def train_data_process(text):
     max_aspect_num = 0
     max_len = 0
     for line in text:
+        print('line---->', line)
         QA, max_aspect_temp, max_len_temp = line_data_process(line)
+        print('QA', QA)
+        print('max_aspect_temp', max_aspect_temp)
+        print('max_len_temp', max_len_temp)
         if max_aspect_temp > max_aspect_num:
             max_aspect_num = max_aspect_temp
         if max_len_temp > max_len:
             max_len = max_len_temp
         QA_list.append(QA)
+        # print_QA(QA)
+        # exit()
     return QA_list, max_aspect_num, max_len
 
 
