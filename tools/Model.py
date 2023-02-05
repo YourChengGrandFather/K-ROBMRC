@@ -1,6 +1,6 @@
 from transformers import BertModel
 import torch.nn as nn
-
+from model.KGBert import KGBert
 
 class BERTModel(nn.Module):
     def __init__(self, hidden_size, bert_model_type):
@@ -9,7 +9,7 @@ class BERTModel(nn.Module):
 
         # BERT模型
         if bert_model_type == 'bert-base-uncased':
-            self.bert = BertModel.from_pretrained(bert_model_type)
+            self.bert = KGBert
             print('bert-base-uncased model loaded')
 
         else:

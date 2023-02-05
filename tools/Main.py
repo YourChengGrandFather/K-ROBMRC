@@ -494,8 +494,6 @@ def train(arguments):
             for batch_index, batch_dict in enumerate(batch_generator):
 
                 optimizer.zero_grad()
-                print('batch_dict==>', batch_dict)
-                exit()
                 f_aspect_start_scores, f_aspect_end_scores = model(batch_dict['forward_asp_query'],
                                                                    batch_dict['forward_asp_query_mask'],
                                                                    batch_dict['forward_asp_query_seg'], 'A')
