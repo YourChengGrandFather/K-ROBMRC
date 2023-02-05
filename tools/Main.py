@@ -1,6 +1,9 @@
 import argparse
 import math
 import os
+import os, sys
+
+os.chdir(sys.path[0])
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 import torch

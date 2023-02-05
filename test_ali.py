@@ -1,5 +1,5 @@
-from model.KGBert import KGBert
-print(KGBert)
+# from model.KGBert import KGBert
+# print(KGBert)
 # from easynlp.appzoo import ClassificationDataset
 # from easynlp.appzoo import get_application_model, get_application_evaluator
 # from easynlp.core import Trainer
@@ -17,3 +17,7 @@ print(KGBert)
 #                               user_defined_parameters=user_defined_parameters)
 
 # print('model', model.parameters)
+import torch
+print(torch.cuda.device_count())
+
+print(torch.cuda.is_available())
