@@ -5,7 +5,7 @@ import os, sys
 
 os.chdir(sys.path[0])
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import torch
 from torch.nn import functional as F
 from transformers import AdamW, get_linear_schedule_with_warmup
